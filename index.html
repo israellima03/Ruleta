@@ -1,0 +1,116 @@
+<!doctype html>
+<html class="no-js" lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ruleta en Cascada · Colegio Reekie</title>
+  <meta name="description" content="Ruleta en cascada: hasta 4 niveles de ruletas personalizadas.">
+  <meta name="theme-color" content="#0b1836">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <img src="img/escudoReekie.png" alt="Escudo del Colegio Reekie" class="brand__logo">
+      <div class="brand__text">
+        <h1>Ruleta en Cascada</h1>
+        <p>Gira, elige una opción… ¡y descubre su propia ruleta!</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="sync-bar" id="syncBar">
+    <span class="sync-bar__label">Sala:</span>
+    <strong id="syncRoomCode">—</strong>
+    <input type="text" id="syncShareLink" class="sync-bar__link" readonly aria-label="Enlace para espectadores">
+    <button id="syncCopyBtn" class="btn btn--ghost" type="button">🔗 Copiar enlace</button>
+  </div>
+
+  <div class="app-toolbar">
+    <div class="level-select-group" id="levelSelectGroup">
+      <label for="levelSelect">Niveles de la cascada:</label>
+      <select id="levelSelect">
+        <option value="1">1 ruleta</option>
+        <option value="2">2 ruletas</option>
+        <option value="3">3 ruletas</option>
+        <option value="4" selected>4 ruletas</option>
+      </select>
+    </div>
+    <div class="toolbar-cta">
+      <span id="playHint" class="play-hint"></span>
+      <button id="playBtn" class="btn btn--red btn--cta" type="button">▶ Jugar</button>
+      <button id="editBtn" class="btn btn--navy btn--cta" type="button" style="display:none;">✎ Editar configuración</button>
+    </div>
+  </div>
+
+  <main class="app-main mode-config" id="appMain">
+
+    <!-- Panel de la ruleta -->
+    <section class="wheel-panel" aria-label="Ruleta">
+      <nav class="crumbs" id="wheelCrumbs" aria-label="Ruta de niveles"></nav>
+
+      <div class="wheel-stage">
+        <div class="pointer" aria-hidden="true"></div>
+        <div class="wheel-frame">
+          <canvas id="wheelCanvas" width="560" height="560"></canvas>
+        </div>
+        <button id="spinBtn" class="spin-btn" type="button">
+          <span>GIRAR</span>
+        </button>
+        <div class="wheel-lock" id="wheelLock">
+          <p>🔒 Termina de configurar y pulsa <strong>Jugar</strong> para girar</p>
+        </div>
+        <div class="wheel-lock" id="viewerLoading">
+          <p>📡 Conectando con la presentación…</p>
+        </div>
+      </div>
+
+      <div class="wheel-controls">
+        <button id="respinBtn" class="btn btn--ghost" type="button">↻ Girar de nuevo</button>
+        <button id="homeBtn" class="btn btn--ghost" type="button">🏠 Volver al inicio</button>
+      </div>
+
+      <div id="resultPanel" class="result-panel hidden">
+        <p class="result-panel__eyebrow" id="resultEyebrow">Salió</p>
+        <h2 id="resultName">—</h2>
+        <div id="resultActions" class="result-panel__actions"></div>
+      </div>
+    </section>
+
+    <!-- Panel de opciones (editor) -->
+    <section class="editor-panel" aria-label="Editor de opciones">
+      <div class="editor-panel__head">
+        <h2 id="editorTitle">Opciones</h2>
+        <p id="editorSubtitle">Escribe las opciones entre las que quieres hacer una selección aleatoria. Configura todos los niveles que quieras y, cuando termines, pulsa "Jugar".</p>
+      </div>
+
+      <nav class="crumbs crumbs--editor" id="editorCrumbs" aria-label="Ruta de edición"></nav>
+
+      <ul id="optionsList" class="options-list"></ul>
+
+      <div class="editor-actions">
+        <button id="addOptionBtn" class="btn btn--gold" type="button">+ Añadir opción</button>
+        <span id="depthHint" class="editor-hint"></span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Colegio “Reekie” · Oruro – Bolivia</p>
+  </footer>
+
+  <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,744 @@
+/* =========================================================
+   Ruleta en Cascada — Colegio Reekie
+   Paleta basada en el escudo: azul marino, rojo, dorado y crema
+   ========================================================= */
+
+:root{
+  /* --- Colores del escudo --- */
+  --navy-900:#0b1836;
+  --navy-800:#122455;
+  --navy-700:#1a2f6b;
+  --navy-500:#2a4390;
+  --red-600:#c81f33;
+  --red-500:#e8394a;
+  --gold-500:#f0c14b;
+  --gold-400:#ffd76b;
+  --gold-700:#a9791f;
+  --cream-50:#fff8ea;
+  --white:#ffffff;
+
+  /* --- Colores de la ruleta (cíclicos, variantes juveniles del escudo) --- */
+  --slice-1:#f0c14b;
+  --slice-2:#122455;
+  --slice-3:#e8394a;
+  --slice-4:#fff3d1;
+  --slice-5:#2a4390;
+  --slice-6:#ff7d8a;
+  --slice-7:#ffd76b;
+  --slice-8:#0b1836;
+
+  --radius-lg:22px;
+  --radius-md:14px;
+  --radius-sm:9px;
+
+  --shadow-soft:0 18px 40px -18px rgba(11,24,54,.45);
+  --shadow-pop:0 10px 22px -10px rgba(11,24,54,.5);
+
+  --font-display:'Baloo 2', system-ui, sans-serif;
+  --font-body:'Poppins', system-ui, sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+html,body{ height:100%; }
+
+/* Modo juego: evita el scroll de la página para que la ruleta y el
+   resultado quepan siempre en una sola pantalla */
+html.mode-play-lock,
+html.mode-play-lock body{
+  overflow:hidden;
+  height:100%;
+}
+
+body{
+  margin:0;
+  font-family:var(--font-body);
+  color:var(--navy-900);
+  background:
+    radial-gradient(circle at 12% -10%, rgba(240,193,75,.25), transparent 45%),
+    radial-gradient(circle at 110% 10%, rgba(232,57,74,.18), transparent 40%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-800) 45%, var(--navy-900) 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+
+img{ max-width:100%; display:block; }
+
+button{ font-family:inherit; }
+
+/* ---------- Header ---------- */
+.app-header{
+  padding:22px clamp(16px, 4vw, 48px) 10px;
+  transition:padding .2s ease;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+.brand__logo{
+  width:150px;
+  height:150px;
+  object-fit:cover;
+  object-position:center;
+  border-radius:50%;
+  background:var(--cream-50);
+  padding:0;
+  box-shadow:var(--shadow-pop), 0 0 0 4px var(--gold-500), 0 0 24px rgba(240,193,75,.35);
+  flex-shrink:0;
+  transition:width .2s ease, height .2s ease;
+}
+
+/* Header compacto en modo juego para dejar más alto disponible a la ruleta */
+html.mode-play-lock .app-header{
+  padding:10px clamp(16px, 4vw, 48px) 4px;
+}
+html.mode-play-lock .brand__logo{
+  width:46px;
+  height:46px;
+}
+html.mode-play-lock .brand__text p{
+  display:none;
+}
+html.mode-play-lock .app-footer{
+  display:none;
+}
+html.mode-play-lock .app-toolbar{
+  padding-top:2px;
+  padding-bottom:4px;
+}
+html.mode-play-lock .app-main{
+  padding-top:4px;
+  padding-bottom:10px;
+}
+
+.brand__text h1{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(1.4rem, 3.4vw, 2.1rem);
+  color:var(--white);
+  margin:0 0 2px;
+  letter-spacing:.3px;
+  text-shadow:0 3px 0 rgba(0,0,0,.15);
+}
+
+.brand__text p{
+  margin:0;
+  color:var(--gold-400);
+  font-weight:500;
+  font-size:clamp(.82rem, 2vw, .98rem);
+}
+
+/* ---------- Barra de herramientas (configuración / jugar) ---------- */
+.app-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:4px clamp(16px, 4vw, 48px) 14px;
+  max-width:1240px;
+  margin:0 auto;
+}
+
+.level-select-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--white);
+  font-weight:600;
+  font-size:.85rem;
+}
+
+.level-select-group select{
+  background:rgba(255,255,255,.1);
+  color:var(--white);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;
+  padding:7px 14px;
+  font-weight:600;
+  font-size:.85rem;
+  cursor:pointer;
+}
+.level-select-group select option{ color:var(--navy-900); }
+
+.toolbar-cta{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.play-hint{
+  color:var(--gold-400);
+  font-size:.78rem;
+  font-weight:500;
+  max-width:220px;
+  text-align:right;
+}
+
+.btn--cta{
+  font-family:var(--font-display);
+  font-size:1rem;
+  padding:12px 24px;
+  letter-spacing:.3px;
+}
+
+/* ---------- Layout principal ---------- */
+.app-main{
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr);
+  gap:22px;
+  align-items:start;
+  padding:14px clamp(16px, 4vw, 48px) 40px;
+  max-width:1240px;
+  margin:0 auto;
+  transition:grid-template-columns .2s ease;
+}
+
+@media (max-width: 900px){
+  .app-main{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Modo juego: ocultar editor, centrar la ruleta */
+.app-main.mode-play{
+  grid-template-columns:1fr;
+  justify-items:center;
+}
+.app-main.mode-play .editor-panel{
+  display:none;
+}
+
+.app-main.mode-play{
+  padding-left:8px;
+  padding-right:8px;
+}
+.app-main.mode-play .wheel-panel{
+  width:100%;
+  max-width:none;
+}
+.app-main.mode-play .crumbs{
+  margin-bottom:6px;
+  min-height:auto;
+}
+
+/* Modo configuración: la ruleta es solo vista previa (bloqueada) */
+.app-main.mode-config .wheel-controls{
+  display:none;
+}
+.app-main.mode-config .spin-btn{
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- Migas de pan (breadcrumbs) ---------- */
+.crumbs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:14px;
+  min-height:30px;
+}
+
+.crumb{
+  border:none;
+  cursor:pointer;
+  background:rgba(255,255,255,.08);
+  color:var(--gold-400);
+  font-weight:600;
+  font-size:.82rem;
+  padding:6px 12px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:background .15s ease, transform .15s ease;
+}
+.crumb:hover{ background:rgba(255,255,255,.16); transform:translateY(-1px); }
+.crumb.is-current{
+  background:var(--gold-500);
+  color:var(--navy-900);
+  cursor:default;
+}
+.crumb.is-current:hover{ transform:none; }
+.crumb__sep{ color:rgba(255,255,255,.35); font-weight:400; }
+
+.crumbs--editor .crumb{
+  background:rgba(11,24,54,.06);
+  color:var(--navy-700);
+}
+.crumbs--editor .crumb:hover{ background:rgba(11,24,54,.12); }
+.crumbs--editor .crumb.is-current{ background:var(--navy-800); color:var(--white); }
+
+/* ---------- Panel de la ruleta ---------- */
+.wheel-panel{
+  position:relative;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radius-lg);
+  padding:clamp(10px, 1.5vw, 30px);
+  box-shadow:var(--shadow-soft);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* Escudo grande como marca de agua detrás de la ruleta, para que "se note" */
+.wheel-panel::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:url('../img/escudoReekie.png');
+  background-repeat:no-repeat;
+  background-position:center 46%;
+  background-size:88%;
+  opacity:.16;
+  pointer-events:none;
+  z-index:0;
+}
+.wheel-panel > *{
+  position:relative;
+  z-index:1;
+  width:100%;
+}
+
+.wheel-stage{
+  position:relative;
+  width:100%;
+  max-width:640px;
+  margin:6px auto 18px;
+  aspect-ratio:1/1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+/* En modo juego (PC) dejamos que crezca mucho más: el límite real
+   lo pone updatePlayLayout() en JS según el alto/ancho disponibles. */
+.app-main.mode-play .wheel-stage{
+  max-width:none;
+}
+
+.wheel-frame{
+  position:relative;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  padding:clamp(10px, 2vmin, 22px);
+  background:
+    conic-gradient(from 0deg, var(--gold-500), var(--gold-400), var(--gold-500));
+  box-shadow:
+    0 0 0 clamp(6px, 1.3vmin, 14px) var(--navy-900),
+    0 0 0 clamp(9px, 2vmin, 22px) var(--gold-500),
+    var(--shadow-soft);
+}
+#wheelCanvas{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  display:block;
+  background:var(--cream-50);
+  transform:rotate(0deg);
+  will-change:transform;
+}
+
+.pointer{
+  --knob-size: clamp(16px, 3vmin, 32px);
+  position:absolute;
+  top:-10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0; height:0;
+  border-left:clamp(16px, 3vmin, 32px) solid transparent;
+  border-right:clamp(16px, 3vmin, 32px) solid transparent;
+  border-top:clamp(28px, 5.2vmin, 56px) solid var(--red-600);
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));
+  z-index:5;
+}
+.pointer::after{
+  content:'';
+  position:absolute;
+  /* El círculo queda siempre centrado sobre el triángulo: su "left" es
+     exactamente la mitad de su propio ancho hacia la izquierda, usando
+     la misma variable --knob-size que define el tamaño. */
+  top:calc(-1 * var(--knob-size) * 1.55);
+  left:calc(var(--knob-size) / -2);
+  width:var(--knob-size); height:var(--knob-size);
+  border-radius:50%;
+  background:var(--red-600);
+  box-shadow:0 2px 3px rgba(0,0,0,.3);
+}
+
+.spin-btn{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:26%;
+  aspect-ratio:1/1;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  background:radial-gradient(circle at 35% 30%, var(--red-500), var(--red-600) 70%);
+  color:var(--white);
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(.8rem, 2vw, 1.05rem);
+  letter-spacing:.5px;
+  box-shadow:0 6px 14px rgba(0,0,0,.35);
+  z-index:6;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.spin-btn:hover{ filter:brightness(1.06); }
+.spin-btn:active{
+  transform:translate(-50%,-48%);
+  box-shadow:0 3px 8px rgba(0,0,0,.3);
+}
+.spin-btn:disabled{
+  cursor:not-allowed;
+  filter:grayscale(.4) brightness(.85);
+}
+
+/* ---------- Candado de vista previa (modo configuración) ---------- */
+.wheel-lock{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:rgba(11,24,54,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20%;
+  z-index:7;
+}
+.wheel-lock p{
+  margin:0;
+  color:var(--white);
+  font-weight:600;
+  font-size:clamp(.8rem, 2.2vw, 1rem);
+  line-height:1.4;
+  text-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+.app-main.mode-play .wheel-lock{ display:none; }
+
+.wheel-controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-top:6px;
+}
+
+/* ---------- Botones genéricos ---------- */
+.btn{
+  border:none;
+  cursor:pointer;
+  border-radius:999px;
+  padding:10px 18px;
+  font-weight:600;
+  font-size:.9rem;
+  transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.btn:hover{ transform:translateY(-1px); }
+.btn:active{ transform:translateY(0); }
+.btn:disabled{ cursor:not-allowed; opacity:.5; transform:none; }
+
+.btn--ghost{
+  background:rgba(255,255,255,.08);
+  color:var(--white);
+  border:1px solid rgba(255,255,255,.18);
+}
+.btn--ghost:hover{ background:rgba(255,255,255,.15); }
+
+.btn--gold{
+  background:linear-gradient(180deg, var(--gold-400), var(--gold-500));
+  color:var(--navy-900);
+  box-shadow:0 5px 0 var(--gold-700);
+}
+.btn--gold:hover{ filter:brightness(1.04); }
+.btn--gold:active{ box-shadow:0 2px 0 var(--gold-700); transform:translateY(3px); }
+
+.btn--navy{
+  background:linear-gradient(180deg, var(--navy-500), var(--navy-800));
+  color:var(--white);
+  box-shadow:0 5px 0 var(--navy-900);
+}
+.btn--navy:active{ box-shadow:0 2px 0 var(--navy-900); transform:translateY(3px); }
+
+.btn--red{
+  background:linear-gradient(180deg, var(--red-500), var(--red-600));
+  color:var(--white);
+  box-shadow:0 5px 0 #8e1522;
+}
+.btn--red:active{ box-shadow:0 2px 0 #8e1522; transform:translateY(3px); }
+
+/* ---------- Panel de resultado ---------- */
+.result-panel{
+  margin-top:16px;
+  text-align:center;
+  background:linear-gradient(180deg, rgba(240,193,75,.14), rgba(240,193,75,.04));
+  border:1px dashed rgba(240,193,75,.5);
+  border-radius:var(--radius-md);
+  padding:16px;
+  animation:pop-in .35s ease;
+}
+.result-panel.hidden{ display:none; }
+
+/* En modo juego, el resultado flota SOBRE la ruleta en vez de empujar
+   el layout hacia abajo — así nunca aparece scroll. */
+.app-main.mode-play .result-panel{
+  position:absolute;
+  left:50%;
+  bottom:6px;
+  transform:translateX(-50%);
+  width:min(94%, 420px);
+  margin-top:0;
+  background:rgba(11,24,54,.94);
+  border-color:rgba(240,193,75,.6);
+  box-shadow:0 -10px 30px rgba(0,0,0,.35);
+  z-index:9;
+}
+.app-main.mode-play .result-panel .result-panel__eyebrow{ color:var(--gold-400); }
+.app-main.mode-play .result-panel h2{ color:var(--white); }
+
+.result-panel__eyebrow{
+  margin:0;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  font-size:.75rem;
+  font-weight:700;
+  color:var(--gold-400);
+}
+
+.result-panel h2{
+  font-family:var(--font-display);
+  color:var(--white);
+  margin:4px 0 12px;
+  font-size:clamp(1.3rem, 3vw, 1.8rem);
+}
+
+.result-panel__actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+}
+
+@keyframes pop-in{
+  from{ opacity:0; transform:scale(.9) translateY(6px); }
+  to{ opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* ---------- Panel del editor ---------- */
+.editor-panel{
+  background:var(--cream-50);
+  border-radius:var(--radius-lg);
+  padding:clamp(16px, 3vw, 26px);
+  box-shadow:var(--shadow-soft);
+  border:1px solid rgba(11,24,54,.06);
+}
+
+.editor-panel__head h2{
+  font-family:var(--font-display);
+  font-size:1.4rem;
+  color:var(--navy-900);
+  margin:0 0 4px;
+}
+.editor-panel__head p{
+  margin:0 0 14px;
+  color:var(--navy-700);
+  font-size:.92rem;
+  line-height:1.4;
+}
+
+.options-list{
+  list-style:none;
+  margin:0 0 14px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:420px;
+  overflow-y:auto;
+  padding-right:2px;
+}
+
+.option-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--white);
+  border:1px solid rgba(11,24,54,.08);
+  border-radius:var(--radius-sm);
+  padding:6px 8px;
+  transition:box-shadow .15s ease;
+}
+.option-row:focus-within{
+  box-shadow:0 0 0 3px rgba(240,193,75,.5);
+}
+
+.option-row__swatch{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
+}
+
+.option-row__input{
+  flex:1;
+  min-width:0;
+  border:none;
+  background:transparent;
+  font-family:var(--font-body);
+  font-size:.95rem;
+  color:var(--navy-900);
+  padding:8px 4px;
+  font-weight:500;
+}
+.option-row__input:focus{ outline:none; }
+
+.option-row__sub,
+.option-row__del{
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  font-size:1rem;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s ease;
+}
+.option-row__sub{ color:var(--navy-700); }
+.option-row__sub:hover{ background:rgba(42,67,144,.12); }
+.option-row__sub.has-sub{ color:var(--red-600); }
+.option-row__sub:disabled{ opacity:.3; cursor:not-allowed; }
+
+.option-row__del{ color:var(--red-600); }
+.option-row__del:hover{ background:rgba(200,31,51,.12); }
+.option-row__del:disabled{ opacity:.3; cursor:not-allowed; }
+
+.editor-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.editor-hint{
+  font-size:.8rem;
+  color:var(--navy-700);
+  opacity:.75;
+}
+
+/* ---------- Footer ---------- */
+.app-footer{
+  text-align:center;
+  padding:18px;
+  color:rgba(255,255,255,.5);
+  font-size:.8rem;
+}
+
+/* ---------- Confeti ---------- */
+.confetti-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:999;
+}
+.confetti-piece{
+  position:absolute;
+  top:-12px;
+  width:9px;
+  height:14px;
+  opacity:.95;
+  animation:confetti-fall linear forwards;
+  border-radius:2px;
+}
+@keyframes confetti-fall{
+  to{
+    transform:translateY(110vh) rotate(600deg);
+    opacity:.4;
+  }
+}
+
+/* ---------- Accesibilidad: foco visible ---------- */
+button:focus-visible,
+.option-row__input:focus-visible{
+  outline:3px solid var(--red-500);
+  outline-offset:2px;
+}
+
+/* ---------- Reduce motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  #wheelCanvas{ transition:none !important; }
+  .confetti-piece{ animation:none; display:none; }
+}
+
+/* ---------- Responsive ajustes móviles ---------- */
+@media (max-width:520px){
+  .brand__logo{ width:52px; height:52px; }
+  .wheel-controls .btn{ flex:1; text-align:center; }
+  .option-row__input{ font-size:.88rem; }
+}
+
+@media (max-width:640px){
+  .app-toolbar{ flex-direction:column; align-items:stretch; }
+  .toolbar-cta{ justify-content:space-between; }
+  .play-hint{ text-align:left; max-width:none; }
+}
+
+/* ---------- Barra de sincronización (solo presentador) ---------- */
+.sync-bar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  padding:8px clamp(16px, 4vw, 48px);
+  max-width:1240px;
+  margin:0 auto;
+  color:var(--white);
+  font-size:.85rem;
+}
+.sync-bar__label{ color:var(--gold-400); font-weight:600; }
+#syncRoomCode{
+  background:rgba(255,255,255,.12);
+  padding:4px 10px;
+  border-radius:999px;
+  letter-spacing:2px;
+  font-family:var(--font-display);
+}
+.sync-bar__link{
+  flex:1;
+  min-width:160px;
+  max-width:340px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  padding:6px 12px;
+  color:var(--white);
+  font-size:.8rem;
+}
+html.mode-play-lock .sync-bar{ padding-top:2px; padding-bottom:2px; }
+
+/* ---------- Modo espectador: solo mirar, sin controles ---------- */
+.is-viewer .sync-bar,
+.is-viewer .app-toolbar,
+.is-viewer .editor-panel,
+.is-viewer .wheel-controls,
+.is-viewer .spin-btn,
+.is-viewer .result-panel__actions{
+  display:none !important;
+}
+#viewerLoading{ display:none; }
+.is-viewer #viewerLoading.is-active{ display:flex; }
